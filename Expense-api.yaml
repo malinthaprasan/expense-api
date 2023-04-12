@@ -1,0 +1,190 @@
+openapi: 3.1.0
+x-stoplight:
+  id: ymrkc2zgg8d1g
+info:
+  title: Expense API
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /expense-claims:
+    parameters: []
+    get:
+      summary: Retrieve expense claims
+      tags: []
+      responses:
+        '200':
+          description: Returns a list of expense claims
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExpenseClaim'
+                  count:
+                    type: integer
+      operationId: getExpenseClaims
+      description: Retrieve the current expense claims.
+      security:
+        - OAuth2Security:
+            - 'claim:view:self'
+            - 'claim:approve'
+    post:
+      summary: Add Expense Claim
+      operationId: addExpenseClaim
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseClaim'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URL of the newly created expense claim submission
+      security:
+        - OAuth2Security:
+            - 'claim:add'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseClaim'
+      description: Add a new expense claim
+  '/expense-claims/{claim-id}':
+    parameters:
+      - $ref: '#/components/parameters/claim-id'
+    get:
+      summary: Retrieve expense claims
+      tags: []
+      responses:
+        '200':
+          description: Returns a list of expense claims
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  list:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExpenseClaim'
+                  count:
+                    type: integer
+            application/xml:
+              schema:
+                type: object
+                properties: {}
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/ExpenseClaim'
+              examples:
+                example-1:
+                  value: {}
+      operationId: getExpenseClaim
+      description: Retrieve an expense claim by its id.
+      security:
+        - OAuth2Security:
+            - 'claim:view:self'
+            - 'claim:approve'
+  '/expense-claims/{claim-id}/approve':
+    parameters:
+      - name: claim-id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Expense Claim ID
+    post:
+      summary: ''
+      operationId: approveExpenseClaim
+      responses:
+        '200':
+          description: OK
+      description: Approve an Expense Claim
+  '/expense-claims/{claim-id}/reject':
+    parameters:
+      - name: claim-id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Expense Claim ID
+    post:
+      summary: ''
+      operationId: approveExpenseClaim
+      responses:
+        '200':
+          description: OK
+      description: Reject an Expense Claim
+components:
+  schemas:
+    ExpenseClaim:
+      type: object
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+        cost:
+          type: object
+          properties:
+            unit:
+              type: string
+            value:
+              type: string
+        transactionDateUTC:
+          type: string
+        approvalState:
+          type: object
+          properties:
+            state:
+              type: string
+            assignee:
+              type: string
+            reason:
+              type: 'null'
+        owner:
+          type: string
+      x-examples:
+        example-1:
+          id: d838d1a9-406d-4ea1-b85e-8fd02fd68abb
+          description: fuel cost
+          cost:
+            unit: LKR
+            value: '10000'
+          transactionDateUTC: '2022-07-17T16:45:58Z'
+          approvalState:
+            state: pending
+            assignee: manjular@wso2.com
+            reason: null
+          owner: malinthaa@wso2.com
+      title: ExpenseClaim
+      description: Expense Claim
+  securitySchemes:
+    OAuth2Security:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: ''
+          tokenUrl: ''
+          refreshUrl: ''
+          scopes:
+            'claim:view:self': View expense claims of current user
+            'claim:approve': View/approve/reject expense claims
+            'claim:add': Add an expense claim
+  parameters:
+    claim-id:
+      name: claim-id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Expense Claim ID
+security:
+  - OAuth2Security: []
